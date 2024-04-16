@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloudinary Image CRUD</title>
+    <style>
+        #uploadedImage {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Subir Imagen</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" id="imageInput" name="image" accept="image/*">
+        <button type="submit">Subir Imagen</button>
+    </form>
+    
+    <h2>Imagen Subida</h2>
+    <img id="uploadedImage" src="" alt="Uploaded Image">
+    
+    
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const formData = new FormData();
+            const fileInput = document.getElementById('imageInput').files[0];
+            formData.append('image', fileInput);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                document.getElementById('uploadedImage').src = data.imageUrl;
+                document.getElementById('uploadedImage').style.display = 'block'; 
+            } catch (error) {
+                console.error('Error al subir la imagen:', error);
+            }
+        });
+
+        // Obtener la imagen subida cuando se carga la página
+        window.addEventListener('DOMContentLoaded', async () => {
+    try {
+        // Obtener la lista de imágenes subidas
+        const response = await fetch('/api/upload');
+        const data = await response.json();
+
+        // Verificar si se recibió correctamente la lista de imágenes
+        if (data.images && data.images.length > 0) {
+            // Obtener la última imagen de la lista
+            const lastImage = data.images[data.images.length - 1];
+
+            // Mostrar la última imagen subida
+            document.getElementById('uploadedImage').src = lastImage.url;
+            document.getElementById('uploadedImage').style.display = 'block'; 
+        } else {
+            console.error('No se pudo obtener la lista de imágenes subidas');
+        }
+    } catch (error) {
+        console.error('Error al obtener la lista de imágenes subidas:', error);
+    }
+});
+
+
+    </script>
+</body>
+</html>
