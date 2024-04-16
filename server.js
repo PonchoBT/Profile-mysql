@@ -30,34 +30,9 @@ connection.connect((err) => {
   console.log("Conexión establecida con la base de datos MySQL");
 });
 
-// Obtener todas las imágenes
-app.get("/api/upload", (req, res) => {
-  connection.query("SELECT id, url_archivo FROM archivos", (err, results) => {
-    if (err) {
-      console.error(
-        "Error al obtener la lista de archivos desde la base de datos:",
-        err
-      );
-      return res
-        .status(500)
-        .json({
-          error:
-            "Hubo un error al obtener la lista de archivos desde la base de datos.",
-        });
-    }
 
-    // Devolver tanto el ID como la URL de las imágenes
-    const imageInfo = results.map((result) => ({
-      id: result.id,
-      url: result.url_archivo,
-    }));
-
-    res.json({ images: imageInfo });
-  });
-});
-
-// Crear una nueva imagen
-app.post("/upload", upload.single("image"), (req, res) => {
+// CREAR AVATAR
+app.post("/avatar", upload.single("image"), (req, res) => {
   cloudinary.uploader
     .upload_stream({ resource_type: "image" }, (error, result) => {
       if (error) {
@@ -81,12 +56,9 @@ app.post("/upload", upload.single("image"), (req, res) => {
               "Error al guardar el archivo en la base de datos:",
               err
             );
-            return res
-              .status(500)
-              .json({
-                error:
-                  "Hubo un error al guardar el archivo en la base de datos.",
-              });
+            return res.status(500).json({
+              error: "Hubo un error al guardar el archivo en la base de datos.",
+            });
           }
           console.log("Archivo guardado en la base de datos:", results);
 
@@ -97,18 +69,38 @@ app.post("/upload", upload.single("image"), (req, res) => {
     .end(req.file.buffer);
 });
 
-// Obtener una imagen por su ID
-app.get("/api/upload/:id", (req, res) => {
-  const imageId = req.params.id; // Obtener el ID de la imagen de los parámetros de ruta
+// API AVATAR
+app.get("/api/avatar", (req, res) => {
+  connection.query("SELECT id, url_archivo FROM archivos", (err, results) => {
+    if (err) {
+      console.error(
+        "Error al obtener la lista de archivos desde la base de datos:",
+        err
+      );
+      return res.status(500).json({
+        error:
+          "Hubo un error al obtener la lista de archivos desde la base de datos.",
+      });
+    }
 
-  // Verificar si se proporcionó un ID válido
+    // Devolver tanto el ID como la URL de las imágenes
+    const imageInfo = results.map((result) => ({
+      id: result.id,
+      url: result.url_archivo,
+    }));
+
+    res.json({ images: imageInfo });
+  });
+});
+
+// API AVATAR ID 
+app.get("/api/avatar/:id", (req, res) => {
+  const imageId = req.params.id; 
   if (!imageId || isNaN(parseInt(imageId))) {
     return res
       .status(400)
       .json({ error: "Se requiere un ID válido para obtener la imagen." });
   }
-
-  // Consultar la base de datos para obtener la URL de la imagen con el ID proporcionado
   connection.query(
     "SELECT id, url_archivo FROM archivos WHERE id = ?",
     [imageId],
@@ -118,23 +110,16 @@ app.get("/api/upload/:id", (req, res) => {
           "Error al obtener la imagen desde la base de datos:",
           err
         );
-        return res
-          .status(500)
-          .json({
-            error: "Hubo un error al obtener la imagen desde la base de datos.",
-          });
+        return res.status(500).json({
+          error: "Hubo un error al obtener la imagen desde la base de datos.",
+        });
       }
 
-      // Verificar si se encontró una imagen con el ID proporcionado
       if (results.length === 0) {
-        return res
-          .status(404)
-          .json({
-            error: "No se encontró ninguna imagen con el ID proporcionado.",
-          });
+        return res.status(404).json({
+          error: "No se encontró ninguna imagen con el ID proporcionado.",
+        });
       }
-
-      // Devolver el ID y la URL de la imagen
       res.json({ id: results[0].id, imageUrl: results[0].url_archivo });
     }
   );
