@@ -129,6 +129,10 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname + "/index.html");
 });
 
+app.get("/alfonso", (req, res) => {
+  res.sendFile(__dirname + "/alfonso.html");
+});
+
 app.listen(port, () => {
   console.log(`Servidor iniciado en http://localhost:${port}`);
 });
