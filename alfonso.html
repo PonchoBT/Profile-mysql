@@ -1,95 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cloudinary Image</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <style>
-      #uploadedImage {
-        display: none;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <div class="row mt-5">
-        <div class="col-md-6 offset-md-3">
-          <h2 class="text-center">Profile</h2>
-          <img
-            id="uploadedImage"
-            class="img-fluid rounded mx-auto d-block mt-3"
-            width="150"
-            height="150"
-          />
-        </div>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cloudinary Image</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<style>
+   #uploadedImage:hover {
+      opacity: 0.7; /* Reducción de la opacidad al 70% */
+      cursor: pointer; /* Cambio del cursor a mano */
+    }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="row mt-5">
+    <div class="col-md-6 offset-md-3">
+      <h2 class="text-center">Profile</h2>
+      <!-- Ahora la imagen tiene un atributo onclick que llama a la función seleccionarImagen() -->
+      <img id="uploadedImage" class="img-fluid rounded mx-auto d-block mt-3" width="150" height="150" src="placeholder.png" onclick="seleccionarImagen()" />
+      <!-- Utiliza tu imagen de marcador de posición o deja src="" para ninguna imagen predeterminada -->
+    </div>
+  </div>
+  <div class="row mt-5">
+    <div class="col-md-6 offset-md-3 text-center">
+      <!-- El input de archivo ahora se encuentra fuera del formulario -->
+      <input
+        type="file"
+        class="form-control"
+        id="imageInput"
+        name="image"
+        accept="image/*"
+        style="display: none;"
+        onchange="mostrarVistaPrevia()"
+      />
+      <!-- Eliminamos el formulario y movemos el botón de carga fuera del formulario -->
+      <button type="button" class="btn btn-primary" onclick="subirImagen()">Upload image</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de éxito -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="successModalLabel">¡Foto Guardada!</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="row mt-5">
-        <div class="col-md-6 offset-md-3">
-          <form id="uploadForm" enctype="multipart/form-data">
-            <div class="mb-3">
-              <input
-                type="file"
-                class="form-control"
-                id="imageInput"
-                name="image"
-                accept="image/*"
-              />
-            </div>
-            <button type="submit" class="btn btn-primary">Upload</button>
-          </form>
-        </div>
+      <div class="modal-body">
+        La foto se ha guardado correctamente.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
       </div>
     </div>
-    <script>
-      document
-        .getElementById("uploadForm")
-        .addEventListener("submit", async function (event) {
-          event.preventDefault();
-          const formData = new FormData();
-          const fileInput = document.getElementById("imageInput").files[0];
-          formData.append("image", fileInput);
-          try {
-            const response = await fetch("/avatar", {
-              method: "POST",
-              body: formData,
-            });
+  </div>
+</div>
 
-            const data = await response.json();
-            document.getElementById("uploadedImage").src = data.imageUrl;
-            document.getElementById("uploadedImage").style.display = "block";
-          } catch (error) {
-            console.error("Error al subir la imagen:", error);
-          }
-        });
-      // Obtener la imagen subida cuando se carga la página
-      window.addEventListener("DOMContentLoaded", async () => {
-        try {
-          // Obtener la lista de imágenes subidas
-          const response = await fetch("/api/avatar");
-          const data = await response.json();
+<script>
+  window.addEventListener("DOMContentLoaded", async () => {
+    try {
+      // Obtener la lista de imágenes subidas
+      const response = await fetch("/api/avatar");
+      const data = await response.json();
 
-          // Verificar si se recibió correctamente la lista de imágenes
-          if (data.images && data.images.length > 0) {
-            // Obtener la última imagen de la lista
-            const lastImage = data.images[data.images.length - 1];
-            // Mostrar la última imagen subida
-            document.getElementById("uploadedImage").src = lastImage.url;
-            document.getElementById("uploadedImage").style.display = "block";
-          } else {
-            console.error("No se pudo obtener la lista de imágenes subidas");
-          }
-        } catch (error) {
-          console.error(
-            "Error al obtener la lista de imágenes subidas:",
-            error
-          );
-        }
+      // Verificar si se recibió correctamente la lista de imágenes
+      if (data.images && data.images.length > 0) {
+        // Obtener la última imagen de la lista
+        const lastImage = data.images[data.images.length - 1];
+        // Mostrar la última imagen subida
+        document.getElementById("uploadedImage").src = lastImage.url;
+        document.getElementById("uploadedImage").style.display = "block";
+      } else {
+        console.error("No se pudo obtener la lista de imágenes subidas");
+      }
+    } catch (error) {
+      console.error(
+        "Error al obtener la lista de imágenes subidas:",
+        error
+      );
+    }
+  });
+
+  function seleccionarImagen() {
+    // Simulamos un clic en el input de archivo cuando se hace clic en la imagen
+    document.getElementById('imageInput').click();
+  }
+
+  function mostrarVistaPrevia() {
+    const fileInput = document.getElementById('imageInput').files[0];
+    if (fileInput) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('uploadedImage').src = e.target.result;
+        document.getElementById('uploadedImage').style.display = 'block';
+      }
+      reader.readAsDataURL(fileInput);
+    }
+  }
+
+  function subirImagen() {
+    const fileInput = document.getElementById('imageInput').files[0];
+    if (fileInput) {
+      const formData = new FormData();
+      formData.append('image', fileInput);
+
+      fetch('/avatar', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('uploadedImage').src = data.imageUrl;
+        document.getElementById('uploadedImage').style.display = 'block';
+        // Mostrar el modal de éxito después de cargar la imagen
+        var successModal = new bootstrap.Modal(document.getElementById('successModal'), {keyboard: false});
+        successModal.show();
+      })
+      .catch(error => {
+        console.error('Error al subir la imagen:', error);
       });
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  </body>
+    }
+  }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>
